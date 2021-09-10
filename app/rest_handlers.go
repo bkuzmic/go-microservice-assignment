@@ -35,7 +35,7 @@ func (a *App) CreatePersonHandler() http.HandlerFunc {
 		if err != nil {
 			log.Println("Error processing body request")
 			log.Println(err)
-			BadRequest(w, "Invalid request")
+			badRequest(w, "Invalid request")
 			return
 		}
 		var person models.Person
@@ -43,7 +43,7 @@ func (a *App) CreatePersonHandler() http.HandlerFunc {
 		if err != nil {
 			log.Println("Error unmarshalling body request")
 			log.Println(err)
-			BadRequest(w, "Invalid request")
+			badRequest(w, "Invalid request")
 			return
 		}
 
@@ -54,11 +54,11 @@ func (a *App) CreatePersonHandler() http.HandlerFunc {
 		if err != nil {
 			log.Println("Error writing person to storage")
 			log.Println(err)
-			ServerError(w)
+			serverError(w)
 			return
 		}
 
-		CreatedResponse(w, &person)
+		createdResponse(w, &person)
 	}
 }
 
@@ -68,18 +68,18 @@ func (a *App) GetPersonHandler() http.HandlerFunc {
 		id, ok := vars["id"]
 		if !ok {
 			log.Println("ID parameter is missing")
-			BadRequest(w, "ID parameter is missing")
+			badRequest(w, "ID parameter is missing")
 		}
 		person, err := a.DB.GetPerson(r.Context(), id)
 		if err != nil {
 			if err.Error() == "redis: nil" {
-				NotFoundResponse(w)
+				notFoundResponse(w)
 			} else {
-				ServerError(w)
+				serverError(w)
 			}
 			return
 		}
-		OkResponse(w, person)
+		okResponse(w, person)
 	}
 }
 
@@ -90,7 +90,7 @@ func (a *App) UpdatePersonOptimisticHandler() http.HandlerFunc {
 		if err != nil {
 			log.Println("Error processing body request")
 			log.Println(err)
-			BadRequest(w, "Invalid request")
+			badRequest(w, "Invalid request")
 			return
 		}
 		var person models.Person
@@ -98,19 +98,19 @@ func (a *App) UpdatePersonOptimisticHandler() http.HandlerFunc {
 		if err != nil {
 			log.Println("Error unmarshalling body request")
 			log.Println(err)
-			BadRequest(w, "Invalid request")
+			badRequest(w, "Invalid request")
 			return
 		}
 		if person.Id == "" {
 			msg := "Missing person ID"
 			log.Println(msg)
-			BadRequest(w, msg)
+			badRequest(w, msg)
 			return
 		}
 
 		var modifiedPerson models.Person
 		modifiedPerson, err = a.DB.UpdatePersonOptimistic(r.Context(), &person)
-		OkResponse(w, &modifiedPerson)
+		okResponse(w, &modifiedPerson)
 	}
 }
 
@@ -119,38 +119,38 @@ func (a *App) UpdatePersonPessimisticHandler() http.HandlerFunc {
 		//person, err := a.DB.GetPerson(r.Context(), id)
 		//if err != nil {
 		//	if err.Error() == "redis: nil" {
-		//		NotFoundResponse(w)
+		//		notFoundResponse(w)
 		//	} else {
-		//		ServerError(w)
+		//		serverError(w)
 		//	}
 		//	return
 		//}
-		//OkResponse(w, person)
+		//okResponse(w, person)
 	}
 }
 
-func ServerError(w http.ResponseWriter) {
+func serverError(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusInternalServerError)
 }
 
-func BadRequest(w http.ResponseWriter, message string) {
+func badRequest(w http.ResponseWriter, message string) {
 	w.WriteHeader(http.StatusBadRequest)
 	w.Write([]byte(message))
 }
 
-func NotFoundResponse(w http.ResponseWriter) {
+func notFoundResponse(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusNotFound)
 	w.Write([]byte("Not found"))
 }
 
-func CreatedResponse(w http.ResponseWriter, person *models.Person) {
+func createdResponse(w http.ResponseWriter, person *models.Person) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	res, _ := json.Marshal(person)
 	w.Write(res)
 }
 
-func OkResponse(w http.ResponseWriter, person *models.Person) {
+func okResponse(w http.ResponseWriter, person *models.Person) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	res, _ := json.Marshal(person)
