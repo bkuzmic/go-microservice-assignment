@@ -23,6 +23,11 @@ func (date *JSONDate) UnmarshalJSON(data []byte) error {
 	return err
 }
 
+func (date JSONDate) MarshalText() (string, error) {
+	d := fmt.Sprintf("%s", time.Time(date).Format(DobDateFormat))
+	return d, nil
+}
+
 type Person struct {
 	Id string `json:"id"`
 	Name string `json:"name"`

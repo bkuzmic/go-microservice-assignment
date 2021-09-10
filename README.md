@@ -1,12 +1,13 @@
-# Microservice assignment in Go
+# Microservices assignment in Go
 
-Microservice Assignment in Go
+Microservices Assignment in Go
 
 TODO:
 
 - [ ] Write service description and documentation in README
 - [ ] Sketch deployment diagram in README
-- [ ] Implement update optimistic and pessimistic methods
+- [x] Implement update optimistic method
+- [ ] Implement update pessimistic method
 - [ ] Implement new service in Go that will clean up expired keys
 - [ ] Write unit tests
 - [ ] Write system tests

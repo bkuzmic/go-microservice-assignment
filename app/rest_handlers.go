@@ -83,6 +83,52 @@ func (a *App) GetPersonHandler() http.HandlerFunc {
 	}
 }
 
+func (a *App) UpdatePersonOptimisticHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// validate input
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			log.Println("Error processing body request")
+			log.Println(err)
+			BadRequest(w, "Invalid request")
+			return
+		}
+		var person models.Person
+		err = json.Unmarshal(body, &person)
+		if err != nil {
+			log.Println("Error unmarshalling body request")
+			log.Println(err)
+			BadRequest(w, "Invalid request")
+			return
+		}
+		if person.Id == "" {
+			msg := "Missing person ID"
+			log.Println(msg)
+			BadRequest(w, msg)
+			return
+		}
+
+		var modifiedPerson models.Person
+		modifiedPerson, err = a.DB.UpdatePersonOptimistic(r.Context(), &person)
+		OkResponse(w, &modifiedPerson)
+	}
+}
+
+func (a *App) UpdatePersonPessimisticHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		//person, err := a.DB.GetPerson(r.Context(), id)
+		//if err != nil {
+		//	if err.Error() == "redis: nil" {
+		//		NotFoundResponse(w)
+		//	} else {
+		//		ServerError(w)
+		//	}
+		//	return
+		//}
+		//OkResponse(w, person)
+	}
+}
+
 func ServerError(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusInternalServerError)
 }

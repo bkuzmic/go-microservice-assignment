@@ -10,8 +10,8 @@ import (
 type RedisDB interface {
 	CreatePerson(ctx *context.Context, p *models.Person) error
 	GetPerson(ctx *context.Context, id string) (*models.Person, error)
-	UpdatePersonOptimistic(ctx *context.Context, p *models.Person) error
-	UpdatePersonPessimistic(ctx *context.Context, p *models.Person) error
+	UpdatePersonOptimistic(ctx *context.Context, p *models.Person) (*models.Person, error)
+	UpdatePersonPessimistic(ctx *context.Context, p *models.Person) (*models.Person, error)
 }
 
 type DB struct {
