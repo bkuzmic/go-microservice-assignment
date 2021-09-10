@@ -49,7 +49,7 @@ func (a *App) CreatePersonHandler() http.HandlerFunc {
 		key := uuid.New().String()
 		person.Id = key
 
-		err = a.DB.CreatePerson(&person)
+		err = a.DB.CreatePerson(r.Context(), &person)
 		if err != nil {
 			log.Println("Error writing person to storage")
 			log.Println(err)

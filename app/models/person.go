@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-const DobDateFormat = "2006-02-01" // YYYY-DD-MM
+const DobDateFormat = "02/01/2006" // DD/MM/YYYY
 
 type JSONDate time.Time
 
