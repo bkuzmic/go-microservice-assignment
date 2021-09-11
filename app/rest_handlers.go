@@ -118,16 +118,36 @@ func (a *app) UpdatePersonOptimisticHandler() http.HandlerFunc {
 
 func (a *app) UpdatePersonPessimisticHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		//person, err := a.DB.GetPerson(r.Context(), id)
-		//if err != nil {
-		//	if err.Error() == "redis: nil" {
-		//		notFoundResponse(w)
-		//	} else {
-		//		serverError(w)
-		//	}
-		//	return
-		//}
-		//okResponse(w, person)
+		// validate input
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			log.Println("Error processing body request")
+			log.Println(err)
+			badRequest(w, "Invalid request")
+			return
+		}
+		var person models.Person
+		err = json.Unmarshal(body, &person)
+		if err != nil {
+			log.Println("Error unmarshalling body request")
+			log.Println(err)
+			badRequest(w, "Invalid request")
+			return
+		}
+		if person.Id == "" {
+			msg := "Missing person ID"
+			log.Println(msg)
+			badRequest(w, msg)
+			return
+		}
+
+		modifiedPerson, err := a.DB.UpdatePersonPessimistic(r.Context(), &person)
+		if err != nil {
+			log.Println("Error while calling UpdatePersonOptimistic", err)
+			serverError(w)
+			return
+		}
+		okResponse(w, modifiedPerson)
 	}
 }
 

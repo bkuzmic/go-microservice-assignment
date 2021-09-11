@@ -4,12 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/go-redis/redis/v8"
+	"github.com/go-redsync/redsync/v4"
 	"go-microservice-assignment/app/models"
 	"time"
 )
 
 type db struct {
 	client *redis.Client
+	mutex *redsync.Mutex
 	expireTimeInMinutes time.Duration
 }
 
@@ -17,11 +19,11 @@ type RedisDB interface {
 	CreatePerson(ctx context.Context, p *models.Person) error
 	GetPerson(ctx context.Context, id string) (*models.Person, error)
 	UpdatePersonOptimistic(ctx context.Context, p *models.Person) (*models.Person, error)
-	//UpdatePersonPessimistic(ctx *context.Context, p *models.Person) (*models.Person, error)
+	UpdatePersonPessimistic(ctx context.Context, p *models.Person) (*models.Person, error)
 }
 
-func NewDB(client *redis.Client, expireTimeInMinutes time.Duration) RedisDB {
-	return &db{client, expireTimeInMinutes}
+func NewDB(client *redis.Client, mutex *redsync.Mutex, expireTimeInMinutes time.Duration) RedisDB {
+	return &db{client, mutex,expireTimeInMinutes}
 }
 
 func (d *db) CreatePerson(ctx context.Context, p *models.Person) error {
@@ -90,6 +92,58 @@ func (d *db) UpdatePersonOptimistic(ctx context.Context, p *models.Person) (*mod
 	}, p.Id)
 
 	return modifiedPerson, err
+}
+
+func (d *db) UpdatePersonPessimistic(ctx context.Context, p *models.Person) (*models.Person, error) {
+	var modifiedPerson *models.Person
+
+	if err := d.mutex.LockContext(ctx); err != nil {
+		return nil, err
+	}
+
+	personString, err := d.client.Get(ctx, p.Id).Result()
+	if err != nil && err != redis.Nil {
+		unlock(d, ctx)
+		return nil, err
+	}
+
+	err = json.Unmarshal([]byte(personString), &modifiedPerson)
+	if err != nil {
+		unlock(d, ctx)
+		return nil, err
+	}
+
+	// update person's data
+	if p.Name != "" {
+		modifiedPerson.Name = p.Name
+	}
+	if p.Address != "" {
+		modifiedPerson.Address = p.Address
+	}
+	dateOfBirth, err := p.DateOfBirth.MarshalText()
+	if err == nil && dateOfBirth != "01/01/0001" {
+		modifiedPerson.DateOfBirth = p.DateOfBirth
+	}
+
+	expireKey := getExpireKey(modifiedPerson.Id)
+	updated := time.Now()
+
+	trans := d.client.TxPipeline()
+	// insert person with person.Id as key
+	trans.Set(ctx, modifiedPerson.Id, modifiedPerson, 0)
+	// also insert key with updated date and expiration
+	trans.Set(ctx, expireKey, updated, d.expireTimeInMinutes)
+	_, err = trans.Exec(ctx)
+
+	unlock(d, ctx)
+
+	return modifiedPerson, err
+}
+
+func unlock(d *db, ctx context.Context) {
+	if _, err := d.mutex.UnlockContext(ctx); err != nil {
+		panic(err)
+	}
 }
 
 func getExpireKey(id string) string {

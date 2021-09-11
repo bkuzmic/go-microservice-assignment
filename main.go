@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"github.com/go-redis/redis/v8"
+	"github.com/go-redsync/redsync/v4"
+	"github.com/go-redsync/redsync/v4/redis/goredis/v8"
 	"go-microservice-assignment/app"
 	"go-microservice-assignment/app/storage"
 	"log"
@@ -22,7 +24,12 @@ func main() {
 	keyExpireTime, err := strconv.Atoi(os.Getenv("KEY_IDLE_TIME_MINUTES"))
 	check(err)
 
-	db := storage.NewDB(rdb, time.Duration(keyExpireTime)*time.Minute)
+	// setup mutex for exclusive lock (pessimistic locking)
+	pool := goredis.NewPool(rdb)
+	rs := redsync.New(pool)
+	mutex := rs.NewMutex("update-person-lock")
+
+	db := storage.NewDB(rdb, mutex, time.Duration(keyExpireTime)*time.Minute)
 
 	application := app.New(db)
 	http.HandleFunc("/", application.Router.ServeHTTP)
