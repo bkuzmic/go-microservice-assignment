@@ -8,14 +8,15 @@ services:
         environment:
          - REDIS_REPLICATION_MODE=master
         container_name: assignment_redis
-#    app:
-#        build: .
-#        image: bkuzmic/go-microservice-assignment
-#        depends_on:
-#            - redis
-#        ports:
-#            - "8080:8080"
-#        environment:
-#            REDIS_URL: redis:6379
-#            REDIS_PASSWORD: ${REDIS_PASSWORD}
-#        container_name: assignment_app
+    app:
+        build: .
+        image: bkuzmic/go-person-service
+        depends_on:
+            - redis
+        ports:
+            - "8000:8000"
+        environment:
+            KEY_IDLE_TIME_MINUTES: 5
+            REDIS_URL: redis:6379
+            REDIS_PASSWORD: ${REDIS_PASSWORD}
+        container_name: assignment_app
