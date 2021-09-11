@@ -22,13 +22,10 @@ func main() {
 	keyExpireTime, err := strconv.Atoi(os.Getenv("KEY_IDLE_TIME_MINUTES"))
 	check(err)
 
-	storage := &storage.DB {
-		Client: rdb,
-		ExpireTimeInMinutes: time.Duration(keyExpireTime)*time.Minute,
-	}
+	db := storage.NewDB(rdb, time.Duration(keyExpireTime)*time.Minute)
 
-	app := app.New(storage)
-	http.HandleFunc("/", app.Router.ServeHTTP)
+	application := app.New(db)
+	http.HandleFunc("/", application.Router.ServeHTTP)
 
 	log.Println("Application started at port 8000")
 	err = http.ListenAndServe(":8000", nil)

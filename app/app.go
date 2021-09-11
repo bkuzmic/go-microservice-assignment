@@ -5,13 +5,13 @@ import (
 	"go-microservice-assignment/app/storage"
 )
 
-type App struct {
+type app struct {
 	Router *mux.Router
-	DB *storage.DB
+	DB storage.RedisDB
 }
 
-func New(db *storage.DB) *App {
-	app:= &App {
+func New(db storage.RedisDB) *app {
+	app:= &app {
 		Router: mux.NewRouter(),
 		DB: db,
 	}
@@ -19,7 +19,7 @@ func New(db *storage.DB) *App {
 	return app
 }
 
-func (a *App) initRoutes() {
+func (a *app) initRoutes() {
 	a.Router.HandleFunc("/", a.IndexHandler()).Methods("GET")
 	a.Router.HandleFunc("/health", a.HealthHandler()).Methods("GET")
 	a.Router.HandleFunc("/readiness", a.ReadinessHandler()).Methods("GET")
