@@ -54,6 +54,11 @@ func (redis *redisMock) UpdatePersonOptimistic(ctx context.Context, p *models.Pe
 	return args.Get(0).(*models.Person), args.Error(1)
 }
 
+func (redis *redisMock) UpdatePersonPessimistic(ctx context.Context, p *models.Person) (*models.Person, error) {
+	args := redis.Called(ctx, p)
+	return args.Get(0).(*models.Person), args.Error(1)
+}
+
 
 func TestIndexHandler(t *testing.T) {
 	mockResponseWriter := rwMock{}
@@ -362,19 +367,86 @@ func TestUpdatePersonPessimisticHandler_OkResponse(t *testing.T) {
 	testRequest,_ := http.NewRequest("PATCH", "/api/v1/person/123", body)
 
 	mockRedis := redisMock{}
-	mockRedis.On("UpdatePersonOptimistic", context.TODO(), mock.AnythingOfType("*models.Person")).Return(&dummyPerson, nil)
+	mockRedis.On("UpdatePersonPessimistic", context.TODO(), mock.AnythingOfType("*models.Person")).Return(&dummyPerson, nil)
 
 	app := New(&mockRedis)
 	handler := app.UpdatePersonPessimisticHandler()
 	handler.ServeHTTP(&mockResponseWriter, testRequest)
 
-	//mockRedis.AssertNumberOfCalls(t, "UpdatePersonOptimistic", 1)
-	//mockResponseWriter.AssertNumberOfCalls(t, "Header", 1)
-	//mockResponseWriter.AssertNumberOfCalls(t, "WriteHeader", 1)
-	//mockResponseWriter.AssertNumberOfCalls(t, "Write", 1)
-	//
-	//mockRedis.AssertExpectations(t)
-	//mockResponseWriter.AssertExpectations(t)
+	mockRedis.AssertNumberOfCalls(t, "UpdatePersonPessimistic", 1)
+	mockResponseWriter.AssertNumberOfCalls(t, "Header", 1)
+	mockResponseWriter.AssertNumberOfCalls(t, "WriteHeader", 1)
+	mockResponseWriter.AssertNumberOfCalls(t, "Write", 1)
+
+	mockRedis.AssertExpectations(t)
+	mockResponseWriter.AssertExpectations(t)
+}
+
+func TestUpdatePersonPessimisticHandler_BodyInvalidJson(t *testing.T) {
+	mockResponseWriter := rwMock{}
+	mockResponseWriter.On("WriteHeader", http.StatusBadRequest)
+	mockResponseWriter.On("Write", mock.Anything).Return(1, nil)
+
+	body := strings.NewReader("{\"wrong\":\"body\"")
+	testRequest,_ := http.NewRequest("PATCH", "/api/v1/person/123", body)
+
+	app := New(nil)
+	handler := app.UpdatePersonPessimisticHandler()
+	handler.ServeHTTP(&mockResponseWriter, testRequest)
+
+	mockResponseWriter.AssertNumberOfCalls(t, "WriteHeader", 1)
+	mockResponseWriter.AssertNumberOfCalls(t, "Write", 1)
+
+	mockResponseWriter.AssertExpectations(t)
+}
+
+func TestUpdatePersonPessimisticHandler_MissingPersonId(t *testing.T) {
+	mockResponseWriter := rwMock{}
+	mockResponseWriter.On("WriteHeader", http.StatusBadRequest)
+	mockResponseWriter.On("Write", mock.Anything).Return(1, nil)
+
+	dummyPerson := models.Person{
+		Name: "Test123",
+		Address: "Berlin 123",
+	}
+	request, _ := json.Marshal(&dummyPerson)
+	body := strings.NewReader(string(request))
+	testRequest,_ := http.NewRequest("PATCH", "/api/v1/person/123", body)
+
+	app := New(nil)
+	handler := app.UpdatePersonPessimisticHandler()
+	handler.ServeHTTP(&mockResponseWriter, testRequest)
+
+	mockResponseWriter.AssertNumberOfCalls(t, "WriteHeader", 1)
+	mockResponseWriter.AssertNumberOfCalls(t, "Write", 1)
+	mockResponseWriter.AssertExpectations(t)
+}
+
+func TestUpdatePersonPessimisticHandler_UpdatePersonPessimistic_ServerError(t *testing.T) {
+	mockResponseWriter := rwMock{}
+	mockResponseWriter.On("WriteHeader", http.StatusInternalServerError)
+
+	dummyPerson := models.Person{
+		Id: "testId",
+		Name: "Test123",
+		Address: "Berlin 123",
+	}
+	request, _ := json.Marshal(&dummyPerson)
+	body := strings.NewReader(string(request))
+	testRequest,_ := http.NewRequest("PATCH", "/api/v1/person/123", body)
+
+	mockRedis := redisMock{}
+	mockRedis.On("UpdatePersonPessimistic", context.TODO(), mock.AnythingOfType("*models.Person")).Return(&dummyPerson, errors.New("server error"))
+
+	app := New(&mockRedis)
+	handler := app.UpdatePersonPessimisticHandler()
+	handler.ServeHTTP(&mockResponseWriter, testRequest)
+
+	mockRedis.AssertNumberOfCalls(t, "UpdatePersonPessimistic", 1)
+	mockResponseWriter.AssertNumberOfCalls(t, "WriteHeader", 1)
+
+	mockRedis.AssertExpectations(t)
+	mockResponseWriter.AssertExpectations(t)
 }
 
 func createTestGetRequest(useEmptyVars bool) *http.Request {
