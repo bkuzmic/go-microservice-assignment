@@ -2,16 +2,18 @@ build:
 	go build
 
 test:
-	go test ./...
+	go test -v ./...
 
-integration-test:
-	export REDIS_PASSWORD=test && docker-compose up redis > /dev/null &
-	sleep 10 && echo "Waiting for containers to start"
-	go test ./... -tags=integration
-	docker-compose down
+integration-test: redis-up
+	@sleep 5 && echo "Waiting for container to start"
+	go test -v ./... -tags=integration
+	@docker-compose down
+
+redis-up:
+	@export REDIS_PASSWORD=test && docker-compose up -d redis
 
 docker:
 	docker build -t bkuzmic/go-person-service .
 
-run-docker:
+run-local:
 	export REDIS_PASSWORD=test && docker-compose up

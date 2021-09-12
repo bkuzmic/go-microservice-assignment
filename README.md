@@ -1,8 +1,38 @@
 # Microservices assignment in Go
+ 
+Solution to this assignment consists of two services:
 
-Microservices Assignment in Go
+- [Person Service](docs/person-service.md)
 
-TODO:
+- [Backup Service](docs/backup-service.md) - in different repository
+
+## Deployment architecture
+
+TODO
+
+## Local deployment
+
+### Prerequisite
+Install Minikube by following instructions on: https://minikube.sigs.k8s.io/docs/start/
+
+Start Minikube and setup kubectl utility:
+```bash
+minikube start
+minikube kubectl -- get po -A
+# create alias for kubectl
+alias kubectl="minikube kubectl --"
+```
+
+### Building service
+
+Using _make_ build Person service docker image:
+```bash
+make docker
+```
+
+TODO: describe how to deploy Redis, Person Service and then point to Backup Service repository
+
+Tasks:
 
 - [ ] Write service description and documentation in README
 - [ ] Sketch deployment diagram in README
@@ -20,5 +50,3 @@ TODO:
 - [x] Implement connection to Redis database
 - [x] Implement routes for Create, Read and Update (CRU) API calls
 - [x] Create initial project on GitHub
-  
-

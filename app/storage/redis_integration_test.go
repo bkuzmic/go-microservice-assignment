@@ -20,7 +20,10 @@ func TestRedisOptimisticLocking(t *testing.T) {
 		Password: "test",
 		DB:       0, // use default DB
 	})
+	defer rdb.Close()
+
 	db := NewDB(rdb, nil, time.Duration(1)*time.Minute)
+
 
 	dummyPerson1 := models.Person{
 		Id: uuid.New().String(),
@@ -85,6 +88,7 @@ func TestRedisPessimisticLocking(t *testing.T) {
 		Password: "test",
 		DB:       0, // use default DB
 	})
+	defer rdb.Close()
 
 	pool := goredis.NewPool(rdb)
 	rs := redsync.New(pool)
