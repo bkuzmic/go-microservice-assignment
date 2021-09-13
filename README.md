@@ -66,10 +66,11 @@ kubectl apply -f registry-aliases-sa.yaml
 kubectl apply -f registry-aliases-sa-crb.yaml
 kubectl apply -n kube-system -f patch-coredns-job.yaml
 
-# Enable Nginx Ingress
-minikube addons enable ingress
-# Verify Nginx Ingress installation
-kubectl get pods -n ingress-nginx -l app.kubernetes.io/name=ingress-nginx --watch
+# install Nginx Ingress
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo update
+helm install -n assignment ingress-nginx ingress-nginx/ingress-nginx
+
 ```
 
 Tasks:
