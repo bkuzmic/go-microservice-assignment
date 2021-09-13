@@ -13,7 +13,7 @@ redis-up:
 	@export REDIS_PASSWORD=test && docker-compose up -d redis
 
 docker:
-	docker build -t bkuzmic/go-person-service .
+	docker build -t bkuzmic2/go-person-service .
 
 run-local:
 	export REDIS_PASSWORD=test && docker-compose up

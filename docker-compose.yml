@@ -10,7 +10,7 @@ services:
         container_name: assignment_redis
     app:
         build: .
-        image: bkuzmic/go-person-service
+        image: bkuzmic2/go-person-service
         depends_on:
             - redis
         ports:

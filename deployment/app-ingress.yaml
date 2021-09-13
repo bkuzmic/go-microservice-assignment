@@ -2,9 +2,12 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: app-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+  namespace: assignment
 spec:
   rules:
-    - host: person-service.local
+    - host: person-service.test
       http:
         paths:
           - path: /
@@ -14,11 +17,3 @@ spec:
                 name: person-service
                 port:
                   number: 8080
-  ingressClassName: nginx
----
-apiVersion: networking.k8s.io/v1
-kind: IngressClass
-metadata:
-  name: nginx
-spec:
-  controller: k8s.io/ingress-nginx

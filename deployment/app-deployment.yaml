@@ -14,7 +14,7 @@ spec:
         spec:
             containers:
                 - name: person-service-container # name of the container running inside the Pod
-                  image: dev.local/bkuzmic/go-person-service:latest # image to deployed in the container
+                  image: bkuzmic2/go-person-service:latest # image to deployed in the container
                   imagePullPolicy:  Always # pull image from the repository (dockerhub) always
                   ports:
                     - containerPort: 8000 # run on port 8000
