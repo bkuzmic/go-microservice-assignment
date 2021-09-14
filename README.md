@@ -86,6 +86,12 @@ curl -H "Host: person-service.test" http://{lb_external_ip}:80/
 
 Now, go to [Backup Service repository](https://github.com/bkuzmic/go-backup-service)  and deploy it using the provided steps.
 
+## Missing features
+
+- Automated deployment - could be done by using make and above commands in local deployment section 
+- Logging - logging levels, reloading of the configuration, critical errors alarming
+- Monitoring - performance counters (ie. number of requests), connect with Prometheus
+
 Tasks:
 
 - [x] Write service description and documentation in README
@@ -98,7 +104,7 @@ Tasks:
 - [x] Create Make file for building and testing main service
 - [ ] Create Make file for building and testing clean up service
 - [x] Create deployment files for deployment on Minikube
-- [ ] Create manual E2E tests in Insomnia to test the service
+- [x] Create manual E2E tests in Insomnia to test the service
 - [x] Create Dockerfile and local running/testing using docker-compose
 - [x] Add basic tests for CRU methods using Insomnia - REST API test tool
 - [x] Implement connection to Redis database
