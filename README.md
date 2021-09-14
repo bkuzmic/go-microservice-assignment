@@ -15,7 +15,7 @@ Person! Service has 2 instances, while Backup Service only 1.
 
 ## Local deployment
 
-### Prerequisite
+### Prerequisites
 Install Minikube by following instructions on: https://minikube.sigs.k8s.io/docs/start/
 
 Start Minikube and setup kubectl utility and Helm:
