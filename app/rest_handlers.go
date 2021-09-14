@@ -3,17 +3,18 @@ package app
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/gorilla/mux"
 	"go-microservice-assignment/app/models"
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 )
 
 func (a *app) IndexHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Go Microservices Assignment v.0.0.1")
+		fmt.Fprintf(w, "Go Person Service v.0.0.1")
 	}
 }
 
